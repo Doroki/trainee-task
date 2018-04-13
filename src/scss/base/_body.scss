@@ -1,0 +1,17 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    background-color: rgb(53, 130, 253);
+    background-image: radial-gradient(rgb(233, 237, 219) 0%,rgb(53, 130, 253) 50%);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 54.33rem 49.67rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: 'Open Sans', sans-serif;
+}

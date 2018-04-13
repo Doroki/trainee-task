@@ -1,0 +1,10 @@
+.footer {
+    margin-top: auto;
+    margin-bottom: 27px;
+
+    &__img {
+        filter: invert(100%);
+        width: 58px;
+        height: 22px;
+    }
+}
