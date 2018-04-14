@@ -266,6 +266,8 @@ var TableModule = function () {
         for (var data in workerObj) {
             if (workerObj.hasOwnProperty(data)) {
                 var dataValue = workerObj[data];
+                if (data === "dateOfBirth" && workerObj[data] !== "") dataValue = formatDate(dataValue);
+
                 var cell = document.createElement("td");
                 cell.textContent = dataValue;
 
@@ -273,6 +275,21 @@ var TableModule = function () {
             }
         }
         return tableCells;
+    };
+
+    var formatDate = function formatDate(value) {
+        var birthDate = new Date();
+        var numericValue = value.split(".").map(function (val) {
+            return parseInt(val);
+        });
+        var birth = {
+            day: numericValue[0],
+            month: numericValue[1] - 1, // months are counted from 0
+            year: numericValue[2]
+        };
+
+        birthDate.setFullYear(birth.year, birth.month, birth.day);
+        return birthDate.toLocaleString("pl", { day: "2-digit", month: "long", year: "numeric" });
     };
 
     var clearTable = function clearTable() {

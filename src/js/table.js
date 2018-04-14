@@ -56,7 +56,9 @@ const TableModule = (function() {
 
         for (const data in workerObj) {
             if (workerObj.hasOwnProperty(data)) {
-                const dataValue = workerObj[data];
+                let dataValue = workerObj[data];
+                if(data === "dateOfBirth" && workerObj[data] !== "") dataValue = formatDate(dataValue);
+
                 const cell = document.createElement("td")
                 cell.textContent = dataValue;
 
@@ -65,6 +67,19 @@ const TableModule = (function() {
         }
         return tableCells;
     };
+
+    const formatDate = function(value) {
+        const birthDate = new Date();
+        const numericValue = value.split(".").map(val => parseInt(val));
+        const birth = {
+            day: numericValue[0],
+            month: numericValue[1] -1, // months are counted from 0
+            year: numericValue[2]
+        };
+
+        birthDate.setFullYear(birth.year, birth.month, birth.day);
+        return birthDate.toLocaleString("pl", {day: "2-digit", month: "long", year: "numeric"});
+    }
 
     const clearTable = function() {  // Function to clear tabel content before implement data sorted other way
         tableElements.body.innerHTML = "";
