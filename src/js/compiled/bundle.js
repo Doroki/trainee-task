@@ -80,6 +80,7 @@ var MainModule = function () {
 
     var workers = [];
     var dataPages = [];
+    var dataSortMethod = void 0;
 
     var getJSONData = function getJSONData() {
         // Fetch data from JSON file and same to "offers"
@@ -92,23 +93,34 @@ var MainModule = function () {
 
     var saveData = function saveData(data) {
         workers = data;
-        sortData("lastName");
-        splitDataToPages(workers);
-        _table2.default.addDataToTable(dataPages[0]);
+        sortData("id");
+    };
+
+    var resetPreviousData = function resetPreviousData() {
+        _table2.default.clearTable();
+        dataPages = [];
     };
 
     var sortData = function sortData() {
         var key = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "id";
         var sortMethod = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "asc";
 
+        resetPreviousData();
+        dataSortMethod = sortMethod;
+
         workers.sort(function (a, b) {
-            if (a[key] > b[key]) {
-                return (sortMethod = "asc") ? 1 : -1;
-            };
+            if (a[key] < b[key]) {
+                return sortMethod === "asc" ? 1 : -1;
+            } else if (a[key] > b[key]) {
+                return sortMethod === "asc" ? -1 : 1;
+            }
         });
+        splitDataToPages(workers);
+        _table2.default.addDataToTable(dataPages[0]);
     };
 
     var splitDataToPages = function splitDataToPages(workersArr) {
+        if (workers.length < 6) return;
         var mappingIterator = -1;
 
         workersArr.map(function (worker) {
@@ -129,8 +141,15 @@ var MainModule = function () {
         if (!e.target.dataset.page) return;
         var pageNumber = e.target.dataset.page;
         pageNumber = parseInt(pageNumber) - 1;
-        console.log(e.target.dataset.pages);
         _table2.default.addDataToTable(dataPages[pageNumber]);
+    });
+
+    _table2.default.header.addEventListener("click", function (e) {
+        if (!e.target.dataset.sort) return;
+        var sortBy = e.target.dataset.sort;
+        var sortMethod = dataSortMethod === "asc" ? "dsc" : "asc";
+        sortData(sortBy, sortMethod);
+        _table2.default.addDataToTable(dataPages[0]);
     });
 
     // return {
@@ -174,6 +193,7 @@ var TableModule = function () {
     };
 
     var addDataToTable = function addDataToTable(workersData) {
+        tableElements.body.innerHTML = "";
         var tbodyFragment = document.createDocumentFragment();
         var tableRows = createTableRow(workersData);
         tbodyFragment.appendChild(tableRows);
@@ -205,7 +225,33 @@ var TableModule = function () {
             row.appendChild(tableCells);
             tableRows.appendChild(row);
         });
+
+        while (tableRows.childElementCount < 5) {
+            //create empty rows to fill table by 5 elements
+            var emptyRow = createEmptyRow();
+            tableRows.appendChild(emptyRow);
+        }
+
         return tableRows;
+    };
+
+    var createEmptyRow = function createEmptyRow() {
+        var row = document.createElement("tr");
+        var tableCells = createTableCell({
+            id: "",
+            firstName: "",
+            lastName: "",
+            dateOfBirth: "",
+            company: "",
+            note: ""
+        });
+        row.appendChild(tableCells);
+        return row;
+    };
+
+    var clearTable = function clearTable() {
+        tableElements.body.innerHTML = "";
+        tableElements.pages.innerHTML = "";
     };
 
     var pagination = function pagination(dataArr) {
@@ -255,7 +301,8 @@ var TableModule = function () {
         body: tableElements.body,
         pages: tableElements.pages,
         addDataToTable: addDataToTable,
-        pagination: pagination
+        pagination: pagination,
+        clearTable: clearTable
     };
 }();
 

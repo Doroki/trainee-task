@@ -4,7 +4,8 @@ import TableModule from "./table";
 const MainModule = (function () {
 
     let workers = [];
-    const dataPages = [];
+    let dataPages = [];
+    let dataSortMethod;
 
     const getJSONData = function () { // Fetch data from JSON file and same to "offers"
         fetch('./dane.json')
@@ -14,20 +15,31 @@ const MainModule = (function () {
 
     const saveData = function(data) {
         workers = data;
-        sortData("lastName");
-        splitDataToPages(workers);
-        TableModule.addDataToTable(dataPages[0]);
+        sortData("id");
     }
+
+    const resetPreviousData = function() {
+        TableModule.clearTable();
+        dataPages = [];
+    };
 
     const sortData = function( key="id", sortMethod="asc") {
+        resetPreviousData();
+        dataSortMethod = sortMethod;
+
         workers.sort((a, b) => {
-            if(a[key] > b[key]) {
-                return (sortMethod="asc") ? 1 : -1;
-            };
+            if(a[key] < b[key]) {
+                return (sortMethod==="asc") ? 1 : -1;
+            } else if(a[key] > b[key]) {
+                return (sortMethod==="asc") ? -1 : 1;
+            }
         });
-    }
+        splitDataToPages(workers);
+        TableModule.addDataToTable(dataPages[0]);
+    };
 
     const splitDataToPages = function(workersArr) {
+        if(workers.length < 6) return;
         let mappingIterator = -1;
 
         workersArr.map(worker => {
@@ -44,12 +56,19 @@ const MainModule = (function () {
         TableModule.pagination(dataPages);
     }
 
-    TableModule.pages.addEventListener("click", (e) => {
+    TableModule.pages.addEventListener("click", e => {
         if(!e.target.dataset.page) return;
         let pageNumber = e.target.dataset.page;
         pageNumber = parseInt(pageNumber) - 1;
-        console.log(e.target.dataset.pages)
         TableModule.addDataToTable(dataPages[pageNumber]);
+    });
+
+    TableModule.header.addEventListener("click", e => {
+        if(!e.target.dataset.sort) return;
+        let sortBy = e.target.dataset.sort;
+        let sortMethod = (dataSortMethod === "asc") ? "dsc" : "asc";
+        sortData(sortBy, sortMethod);
+        TableModule.addDataToTable(dataPages[0]);
     });
 
     // return {

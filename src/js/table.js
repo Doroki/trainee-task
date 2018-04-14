@@ -22,6 +22,7 @@ const TableModule = (function() {
     };
 
     const addDataToTable = function(workersData) {
+        tableElements.body.innerHTML = "";
         const tbodyFragment = document.createDocumentFragment();
         const tableRows = createTableRow(workersData);
         tbodyFragment.appendChild(tableRows);
@@ -53,8 +54,33 @@ const TableModule = (function() {
             row.appendChild(tableCells);
             tableRows.appendChild(row);
         });
+
+        while(tableRows.childElementCount < 5) { //create empty rows to fill table by 5 elements
+            const emptyRow = createEmptyRow();
+            tableRows.appendChild(emptyRow);
+        }
+
         return tableRows;
     };
+
+    const createEmptyRow = function() {
+        const row = document.createElement("tr");
+        const tableCells = createTableCell({
+            id: "",
+            firstName: "",
+            lastName: "",
+            dateOfBirth: "",
+            company: "",
+            note: ""
+        });
+        row.appendChild(tableCells);
+        return row;
+    }
+
+    const clearTable = function() {
+        tableElements.body.innerHTML = "";
+        tableElements.pages.innerHTML = "";
+    }
 
     const pagination = function(dataArr) {
         const pageButtons = document.createElement("ul")
@@ -103,7 +129,8 @@ const TableModule = (function() {
         body: tableElements.body,
         pages: tableElements.pages,
         addDataToTable,
-        pagination
+        pagination,
+        clearTable
     };
 
 })();
