@@ -29,6 +29,8 @@
         font-weight: bold;
         color: #3A5071;
         letter-spacing: 0.66px;
+        user-select: none;
+        cursor: pointer;
 
         & td {
             position: relative;

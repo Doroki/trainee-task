@@ -116,7 +116,12 @@ body {
     font-size: 14px;
     font-weight: bold;
     color: #3A5071;
-    letter-spacing: 0.66px; }
+    letter-spacing: 0.66px;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+    cursor: pointer; }
     .table__head td {
       position: relative;
       padding: 0 20px 0 8px; }
@@ -163,7 +168,11 @@ body {
   font-weight: bold;
   color: #FFFFFF;
   letter-spacing: 0.75px;
-  text-align: center; }
+  text-align: center;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none; }
   .pagination__pages {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -187,7 +196,5 @@ body {
   margin-top: auto;
   margin-bottom: 27px; }
   .footer__img {
-    -webkit-filter: invert(100%);
-            filter: invert(100%);
     width: 58px;
     height: 22px; }
