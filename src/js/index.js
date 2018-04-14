@@ -1,82 +1,108 @@
 import TableModule from "./table";
-
+import PaginationModule from "./pagination";
 
 const MainModule = (function () {
 
-    let workers = [];
-    let dataPages = [];
-    let dataSortMethod;
+    let Data = {
+        workers: [],
+        dataPages: [],
+        dataSortMethod: "",
+        dataSortBy: ""
+    }
 
-    const getJSONData = function () { // Fetch data from JSON file and same to "offers"
+    const getJSONData = function () { // get Data.workers data from JSON
         fetch('./dane.json')
             .then(response => response.json())
             .then(data => saveData(data));
     };
 
-    const saveData = function(data) {
-        workers = data;
-        sortData("id");
+    const saveData = function(data) { // save data to Array and sort in by default (id)
+        Data.workers = data;
+        sortData();
+        TableModule.sortSign(null, Data.dataSortMethod); // Set default sorting at the begining, by ID and ascending
     }
-
-    const resetPreviousData = function() {
-        TableModule.clearTable();
-        dataPages = [];
-    };
 
     const sortData = function( key="id", sortMethod="asc") {
         resetPreviousData();
-        dataSortMethod = sortMethod;
+        Data.dataSortMethod = sortMethod;
+        Data.dataSortBy = key;
 
-        workers.sort((a, b) => {
+        Data.workers.sort((a, b) => {
             if(a[key] < b[key]) {
-                return (sortMethod==="asc") ? 1 : -1;
-            } else if(a[key] > b[key]) {
                 return (sortMethod==="asc") ? -1 : 1;
+            } else if(a[key] > b[key]) {
+                return (sortMethod==="asc") ? 1 : -1;
+            } else {
+                return 0;
             }
         });
-        splitDataToPages(workers);
-        TableModule.addDataToTable(dataPages[0]);
+        splitDataToPages(Data.workers);
+        TableModule.addDataToTable(Data.dataPages[0]);
     };
 
-    const splitDataToPages = function(workersArr) {
-        if(workers.length < 6) return;
-        let mappingIterator = -1;
+    const splitDataToPages = function(workersArr) { // Split saved data to pages for condition - there is more data objects than 5
+        if(Data.workers.length < 6) return;
 
+        let mappingIterator = -1; // iterator created to help designate index of new page (Array)
         workersArr.map(worker => {
-            if((workersArr.indexOf(worker) % 5) === 0) {
-                mappingIterator++;
+            if((workersArr.indexOf(worker) % 5) === 0) { // With every 5th element create new Page/Array and push it to main Array with index of iterator
+                mappingIterator++; 
                 const newPage = [];
-                dataPages.push(newPage);
-                dataPages[mappingIterator].push(worker);
+                Data.dataPages.push(newPage);
+                Data.dataPages[mappingIterator].push(worker);
             } else {
-                dataPages[mappingIterator].push(worker);
+                Data.dataPages[mappingIterator].push(worker);
             }
         });
+        
+        PaginationModule.createPagination(Data.dataPages);
+    };
 
-        TableModule.pagination(dataPages);
+    const resetPreviousData = function() { // Clear function to clear Pages and table with previous sorted data
+        TableModule.clearTable();
+        PaginationModule.clearPagination();
+        Data.dataPages = [];
+    };
+
+    const setSortMethod = function(sortBy) { // set sort Method to des (descending) if you click second time, the same category. In order case will always be asc (ascenging)
+        let newSortMethod;
+
+        if(Data.dataSortMethod === "asc" && sortBy === Data.dataSortBy) {
+            newSortMethod = "dsc";
+        } else {
+            newSortMethod = "asc";
+        }
+
+        return newSortMethod;
     }
 
-    TableModule.pages.addEventListener("click", e => {
-        if(!e.target.dataset.page) return;
-        let pageNumber = e.target.dataset.page;
-        pageNumber = parseInt(pageNumber) - 1;
-        TableModule.addDataToTable(dataPages[pageNumber]);
-    });
+    const events = function() {
+        PaginationModule.container.addEventListener("click", e => {
+            if(!e.target.dataset.page) return;
+            let pageNumber = e.target.dataset.page;
+            pageNumber = parseInt(pageNumber) - 1;
+            // TableModule.updateProperties({actualPage: pageNumber})
+            TableModule.addDataToTable(Data.dataPages[pageNumber]);
+        });
+    
+        TableModule.header.addEventListener("click", e => {
+            if(!e.target.dataset.sort) return;
+            let sortBy = e.target.dataset.sort;
+            let sortMethod = setSortMethod(sortBy);
+    
+            sortData(sortBy, sortMethod);
+            TableModule.addDataToTable(Data.dataPages[0]);
+            TableModule.sortSign(e.target, Data.dataSortMethod);
+        });
+    }
 
-    TableModule.header.addEventListener("click", e => {
-        if(!e.target.dataset.sort) return;
-        let sortBy = e.target.dataset.sort;
-        let sortMethod = (dataSortMethod === "asc") ? "dsc" : "asc";
-        sortData(sortBy, sortMethod);
-        TableModule.addDataToTable(dataPages[0]);
-    });
-
-    // return {
-
-    // };
-
-
-    getJSONData();
-
+    return {
+        init: function() {
+            getJSONData();
+            events();
+        }
+    };
 })();
+
+MainModule.init();
 

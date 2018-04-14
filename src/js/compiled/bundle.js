@@ -74,16 +74,23 @@ var _table = __webpack_require__(1);
 
 var _table2 = _interopRequireDefault(_table);
 
+var _pagination = __webpack_require__(2);
+
+var _pagination2 = _interopRequireDefault(_pagination);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var MainModule = function () {
 
-    var workers = [];
-    var dataPages = [];
-    var dataSortMethod = void 0;
+    var Data = {
+        workers: [],
+        dataPages: [],
+        dataSortMethod: "",
+        dataSortBy: ""
+    };
 
     var getJSONData = function getJSONData() {
-        // Fetch data from JSON file and same to "offers"
+        // get Data.workers data from JSON
         fetch('./dane.json').then(function (response) {
             return response.json();
         }).then(function (data) {
@@ -92,13 +99,10 @@ var MainModule = function () {
     };
 
     var saveData = function saveData(data) {
-        workers = data;
-        sortData("id");
-    };
-
-    var resetPreviousData = function resetPreviousData() {
-        _table2.default.clearTable();
-        dataPages = [];
+        // save data to Array and sort in by default (id)
+        Data.workers = data;
+        sortData();
+        _table2.default.sortSign(null, Data.dataSortMethod); // Set default sorting at the begining, by ID and ascending
     };
 
     var sortData = function sortData() {
@@ -106,59 +110,91 @@ var MainModule = function () {
         var sortMethod = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "asc";
 
         resetPreviousData();
-        dataSortMethod = sortMethod;
+        Data.dataSortMethod = sortMethod;
+        Data.dataSortBy = key;
 
-        workers.sort(function (a, b) {
+        Data.workers.sort(function (a, b) {
             if (a[key] < b[key]) {
-                return sortMethod === "asc" ? 1 : -1;
-            } else if (a[key] > b[key]) {
                 return sortMethod === "asc" ? -1 : 1;
+            } else if (a[key] > b[key]) {
+                return sortMethod === "asc" ? 1 : -1;
+            } else {
+                return 0;
             }
         });
-        splitDataToPages(workers);
-        _table2.default.addDataToTable(dataPages[0]);
+        splitDataToPages(Data.workers);
+        _table2.default.addDataToTable(Data.dataPages[0]);
     };
 
     var splitDataToPages = function splitDataToPages(workersArr) {
-        if (workers.length < 6) return;
-        var mappingIterator = -1;
+        // Split saved data to pages for condition - there is more data objects than 5
+        if (Data.workers.length < 6) return;
 
+        var mappingIterator = -1; // iterator created to help designate index of new page (Array)
         workersArr.map(function (worker) {
             if (workersArr.indexOf(worker) % 5 === 0) {
+                // With every 5th element create new Page/Array and push it to main Array with index of iterator
                 mappingIterator++;
                 var newPage = [];
-                dataPages.push(newPage);
-                dataPages[mappingIterator].push(worker);
+                Data.dataPages.push(newPage);
+                Data.dataPages[mappingIterator].push(worker);
             } else {
-                dataPages[mappingIterator].push(worker);
+                Data.dataPages[mappingIterator].push(worker);
             }
         });
 
-        _table2.default.pagination(dataPages);
+        _pagination2.default.createPagination(Data.dataPages);
     };
 
-    _table2.default.pages.addEventListener("click", function (e) {
-        if (!e.target.dataset.page) return;
-        var pageNumber = e.target.dataset.page;
-        pageNumber = parseInt(pageNumber) - 1;
-        _table2.default.addDataToTable(dataPages[pageNumber]);
-    });
+    var resetPreviousData = function resetPreviousData() {
+        // Clear function to clear Pages and table with previous sorted data
+        _table2.default.clearTable();
+        _pagination2.default.clearPagination();
+        Data.dataPages = [];
+    };
 
-    _table2.default.header.addEventListener("click", function (e) {
-        if (!e.target.dataset.sort) return;
-        var sortBy = e.target.dataset.sort;
-        var sortMethod = dataSortMethod === "asc" ? "dsc" : "asc";
-        sortData(sortBy, sortMethod);
-        _table2.default.addDataToTable(dataPages[0]);
-    });
+    var setSortMethod = function setSortMethod(sortBy) {
+        // set sort Method to des (descending) if you click second time, the same category. In order case will always be asc (ascenging)
+        var newSortMethod = void 0;
 
-    // return {
+        if (Data.dataSortMethod === "asc" && sortBy === Data.dataSortBy) {
+            newSortMethod = "dsc";
+        } else {
+            newSortMethod = "asc";
+        }
 
-    // };
+        return newSortMethod;
+    };
 
+    var events = function events() {
+        _pagination2.default.container.addEventListener("click", function (e) {
+            if (!e.target.dataset.page) return;
+            var pageNumber = e.target.dataset.page;
+            pageNumber = parseInt(pageNumber) - 1;
+            // TableModule.updateProperties({actualPage: pageNumber})
+            _table2.default.addDataToTable(Data.dataPages[pageNumber]);
+        });
 
-    getJSONData();
+        _table2.default.header.addEventListener("click", function (e) {
+            if (!e.target.dataset.sort) return;
+            var sortBy = e.target.dataset.sort;
+            var sortMethod = setSortMethod(sortBy);
+
+            sortData(sortBy, sortMethod);
+            _table2.default.addDataToTable(Data.dataPages[0]);
+            _table2.default.sortSign(e.target, Data.dataSortMethod);
+        });
+    };
+
+    return {
+        init: function init() {
+            getJSONData();
+            events();
+        }
+    };
 }();
+
+MainModule.init();
 
 /***/ }),
 /* 1 */
@@ -171,49 +207,24 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var TableModule = function () {
 
     var tableElements = {
         header: document.querySelector("#header"),
-        body: document.querySelector("#table-content"),
-        pages: document.querySelector("#pages")
+        body: document.querySelector("#table-content")
     };
 
     var tableProperties = {
-        totalPages: 0,
-        actualPage: 0,
-        sortedBy: "",
-        sortMethod: ""
-    };
-
-    var updateProperties = function updateProperties(newProperies) {
-        tableProperties = _extends({}, tableProperties, newProperies);
+        sortMethod: "" // keep method of actual sorted table (used to remove sort style class of previous element)
     };
 
     var addDataToTable = function addDataToTable(workersData) {
-        tableElements.body.innerHTML = "";
+        // Start to create content of table
         var tbodyFragment = document.createDocumentFragment();
         var tableRows = createTableRow(workersData);
         tbodyFragment.appendChild(tableRows);
         tableElements.body.innerHTML = "";
         tableElements.body.appendChild(tbodyFragment);
-    };
-
-    var createTableCell = function createTableCell(workerObj) {
-        var tableCells = document.createDocumentFragment();
-
-        for (var data in workerObj) {
-            if (workerObj.hasOwnProperty(data)) {
-                var dataValue = workerObj[data];
-                var cell = document.createElement("td");
-                cell.textContent = dataValue;
-
-                tableCells.appendChild(cell);
-            }
-        }
-        return tableCells;
     };
 
     var createTableRow = function createTableRow(workersArr) {
@@ -227,7 +238,7 @@ var TableModule = function () {
         });
 
         while (tableRows.childElementCount < 5) {
-            //create empty rows to fill table by 5 elements
+            //create empty rows to fill rest of the table by 5 elements (provided if there is less)
             var emptyRow = createEmptyRow();
             tableRows.appendChild(emptyRow);
         }
@@ -249,12 +260,69 @@ var TableModule = function () {
         return row;
     };
 
-    var clearTable = function clearTable() {
-        tableElements.body.innerHTML = "";
-        tableElements.pages.innerHTML = "";
+    var createTableCell = function createTableCell(workerObj) {
+        var tableCells = document.createDocumentFragment();
+
+        for (var data in workerObj) {
+            if (workerObj.hasOwnProperty(data)) {
+                var dataValue = workerObj[data];
+                var cell = document.createElement("td");
+                cell.textContent = dataValue;
+
+                tableCells.appendChild(cell);
+            }
+        }
+        return tableCells;
     };
 
-    var pagination = function pagination(dataArr) {
+    var clearTable = function clearTable() {
+        // Function to clear tabel content before implement data sorted other way
+        tableElements.body.innerHTML = "";
+    };
+
+    var sortSign = function sortSign(element, sign) {
+        if (element === null) element = tableElements.header.querySelector("[data-sort='id']");
+
+        if (tableProperties.sortMethod !== "") {
+            // Remove old sorting sign if any was used before
+            var previousSorted = tableElements.header.querySelector("[data-is-sorted='true']");
+            previousSorted.classList.remove("sorted-" + tableProperties.sortMethod);
+            previousSorted.dataset.isSorted = false;
+        }
+
+        element.classList.add("sorted-" + sign);
+        element.dataset.isSorted = true;
+        tableProperties.sortMethod = sign;
+    };
+
+    return {
+        header: tableElements.header,
+        addDataToTable: addDataToTable,
+        clearTable: clearTable,
+        sortSign: sortSign
+    };
+}();
+
+exports.default = TableModule;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+var PaginationModule = function () {
+
+    var properties = {
+        container: document.querySelector("#pages")
+
+    };
+
+    var createPagination = function createPagination(dataArr) {
         var pageButtons = document.createElement("ul");
         pageButtons.classList.add("pagination__pages");
         var backButton = createBackNextButton("\< back");
@@ -265,7 +333,7 @@ var TableModule = function () {
         pageButtons.appendChild(pagesList);
         pageButtons.appendChild(nextButton);
 
-        tableElements.pages.appendChild(pageButtons);
+        properties.container.appendChild(pageButtons);
     };
 
     var createBackNextButton = function createBackNextButton(text) {
@@ -296,17 +364,19 @@ var TableModule = function () {
         return pagesList;
     };
 
+    var clearPagination = function clearPagination() {
+        // Function to clear pagination pages before implement data sorted other way
+        properties.container.innerHTML = "";
+    };
+
     return {
-        header: tableElements.header,
-        body: tableElements.body,
-        pages: tableElements.pages,
-        addDataToTable: addDataToTable,
-        pagination: pagination,
-        clearTable: clearTable
+        container: properties.container,
+        clearPagination: clearPagination,
+        createPagination: createPagination
     };
 }();
 
-exports.default = TableModule;
+exports.default = PaginationModule;
 
 /***/ })
 /******/ ]);

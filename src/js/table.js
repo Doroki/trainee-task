@@ -4,47 +4,21 @@ const TableModule = (function() {
     const tableElements = {
         header: document.querySelector("#header"),
         body: document.querySelector("#table-content"),
-        pages: document.querySelector("#pages")
     }
 
     let tableProperties = {
-        totalPages: 0,
-        actualPage: 0,
-        sortedBy: "",
-        sortMethod: ""
+        sortMethod: "" // keep method of actual sorted table (used to remove sort style class of previous element)
     }
 
-    const updateProperties = function(newProperies) {
-        tableProperties = {
-            ...tableProperties,
-            ...newProperies
-        };
-    };
-
-    const addDataToTable = function(workersData) {
-        tableElements.body.innerHTML = "";
+    const addDataToTable = function(workersData) { // Start to create content of table
         const tbodyFragment = document.createDocumentFragment();
         const tableRows = createTableRow(workersData);
         tbodyFragment.appendChild(tableRows);
         tableElements.body.innerHTML = "";
         tableElements.body.appendChild(tbodyFragment);
     };
+
     
-    const createTableCell = function(workerObj) {
-        const tableCells = document.createDocumentFragment();
-
-        for (const data in workerObj) {
-            if (workerObj.hasOwnProperty(data)) {
-                const dataValue = workerObj[data];
-                const cell = document.createElement("td")
-                cell.textContent = dataValue;
-
-                tableCells.appendChild(cell);
-            }
-        }
-        return tableCells;
-    };
-
     const createTableRow = function(workersArr) {
         const tableRows = document.createDocumentFragment();
 
@@ -55,7 +29,7 @@ const TableModule = (function() {
             tableRows.appendChild(row);
         });
 
-        while(tableRows.childElementCount < 5) { //create empty rows to fill table by 5 elements
+        while(tableRows.childElementCount < 5) { //create empty rows to fill rest of the table by 5 elements (provided if there is less)
             const emptyRow = createEmptyRow();
             tableRows.appendChild(emptyRow);
         }
@@ -76,61 +50,45 @@ const TableModule = (function() {
         row.appendChild(tableCells);
         return row;
     }
+    
+    const createTableCell = function(workerObj) {
+        const tableCells = document.createDocumentFragment();
 
-    const clearTable = function() {
+        for (const data in workerObj) {
+            if (workerObj.hasOwnProperty(data)) {
+                const dataValue = workerObj[data];
+                const cell = document.createElement("td")
+                cell.textContent = dataValue;
+
+                tableCells.appendChild(cell);
+            }
+        }
+        return tableCells;
+    };
+
+    const clearTable = function() {  // Function to clear tabel content before implement data sorted other way
         tableElements.body.innerHTML = "";
-        tableElements.pages.innerHTML = "";
     }
 
-    const pagination = function(dataArr) {
-        const pageButtons = document.createElement("ul")
-        pageButtons.classList.add("pagination__pages");
-        const backButton = createBackNextButton("\< back")
-        const nextButton = createBackNextButton("next \>");
-        const pagesList = createNumberButtons(dataArr)
-        
-        pageButtons.appendChild(backButton);
-        pageButtons.appendChild(pagesList);
-        pageButtons.appendChild(nextButton);
+    const sortSign = function(element, sign) {
+        if(element === null) element = tableElements.header.querySelector("[data-sort='id']");
 
-        tableElements.pages.appendChild(pageButtons);
-    };
+        if(tableProperties.sortMethod !== "") { // Remove old sorting sign if any was used before
+            const previousSorted = tableElements.header.querySelector("[data-is-sorted='true']");
+            previousSorted.classList.remove(`sorted-${tableProperties.sortMethod}`);
+            previousSorted.dataset.isSorted = false;
+        }
 
-    const createBackNextButton = function(text) {
-        const listItem = document.createElement("li");
-        const anchor = document.createElement("a");
-        anchor.textContent = text;
-        anchor.classList.add("pagination__pages--others");
-        listItem.appendChild(anchor);
-        return listItem;
-    }
-
-    const createNumberButtons = function(dataArr) {
-        const pagesList = document.createDocumentFragment();
-
-        dataArr.forEach(element => {
-            const listItem = document.createElement("li");
-            const numberElement = document.createElement("a");
-            const pageNumber = dataArr.indexOf(element) + 1;
-
-            numberElement.textContent = `${pageNumber}`; 
-            numberElement.dataset.page = `${pageNumber}`;
-            numberElement.classList.add("pagination__pages--numbers");
-
-            listItem.appendChild(numberElement);
-            pagesList.appendChild(listItem);
-        });
-
-        return pagesList;
-    };
+        element.classList.add(`sorted-${sign}`);
+        element.dataset.isSorted = true;
+        tableProperties.sortMethod = sign;
+    };   
 
     return {
         header: tableElements.header,
-        body: tableElements.body,
-        pages: tableElements.pages,
         addDataToTable,
-        pagination,
-        clearTable
+        clearTable,
+        sortSign
     };
 
 })();
