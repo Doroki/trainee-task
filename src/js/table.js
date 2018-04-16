@@ -33,7 +33,6 @@ const TableModule = (function() {
             const emptyRow = createEmptyRow();
             tableRows.appendChild(emptyRow);
         }
-
         return tableRows;
     };
 
