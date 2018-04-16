@@ -15,15 +15,22 @@
             padding: 8px;
             cursor: pointer;
             color: #272F3E;
+        }
 
+        &--numbers{
             &:hover {
                 color: #CCC;
             }
         }
 
         &--others {
-            color: #FFF;
+            cursor: default;
         }
+    }
+
+    .enabled {
+        color: #FFF; 
+        cursor: pointer;
     }
 
     .selected {

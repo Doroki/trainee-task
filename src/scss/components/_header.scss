@@ -5,4 +5,8 @@
     letter-spacing: -0.89px;
     text-align: center;
     margin: auto 0 7px 0;
+
+    @media (max-height: 630px) {
+        margin-top: 30px;
+    }
 }
