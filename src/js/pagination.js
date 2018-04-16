@@ -1,29 +1,50 @@
 const PaginationModule = (function(){
 
-    const properties = {
+    let elements = {
         container: document.querySelector("#pages"),
+        backButton: "",
+        nextButton: "",
+    };
 
+    let properties = {
+        totalPages: 0,
+        actualPage: 0,
+    };
+
+    const updatePage = function(newProperties) {
+        properties = {
+            ...properties,
+            ...newProperties
+        }
+
+        styleActualPage();
+    };
+
+    const checkActualPage = function() {
+        return properties.actualPage;
     }
 
     const createPagination = function(dataArr) {
-        const pageButtons = document.createElement("ul")
+        const pageButtons = document.createElement("ul");
         pageButtons.classList.add("pagination__pages");
-        const backButton = createBackNextButton("\< back")
-        const nextButton = createBackNextButton("next \>");
-        const pagesList = createNumberButtons(dataArr)
-        
-        pageButtons.appendChild(backButton);
-        pageButtons.appendChild(pagesList);
-        pageButtons.appendChild(nextButton);
+        const pagesList = createNumberButtons(dataArr);
+        elements.backButton = elements.backButton || createBackNextButton("\< back"); 
+        elements.nextButton = elements.nextButton || createBackNextButton("next \>");
+        // Added content again becouse IE11 loose content after re-createPagination
+        elements.backButton.textContent = "\< back";
+        elements.nextButton.textContent = "next \>";
 
-        properties.container.appendChild(pageButtons);
+        pageButtons.appendChild(elements.backButton);
+        pageButtons.appendChild(pagesList);
+        pageButtons.appendChild(elements.nextButton);
+        elements.container.appendChild(pageButtons);
     };
 
     const createBackNextButton = function(text) {
         const listItem = document.createElement("li");
         const anchor = document.createElement("a");
         anchor.textContent = text;
-        anchor.classList.add("pagination__pages--others");
+        listItem.classList.add("pagination__pages--others");
         listItem.appendChild(anchor);
         return listItem;
     }
@@ -48,13 +69,49 @@ const PaginationModule = (function(){
     };
 
     const clearPagination = function() {  // Function to clear pagination pages before implement data sorted other way
-        properties.container.innerHTML = ""; 
+        elements.container.innerHTML = ""; 
+    }
+
+    const styleActualPage = function() { // set style to actualy used page number
+        if(elements.container.querySelector(`[data-actual='true']`)) resetStyleOfPrevious();
+
+        let actualPageButton = elements.container.querySelector(`[data-page='${properties.actualPage + 1}']`);
+        actualPageButton.classList.add("selected");
+        actualPageButton.dataset.actual = "true";
+        styleBackNextButtons();
+    }
+
+    const resetStyleOfPrevious = function() { // reset style previous selected site number after select another
+        let previousUsedPage = elements.container.querySelector(`[data-actual='true']`);
+        previousUsedPage.classList.remove("selected");
+        previousUsedPage.dataset.actual = "false"
+    }
+
+    const styleBackNextButtons = function() { //Enable buutons back and next
+        if(properties.actualPage <= 0) {
+            elements.backButton.classList.remove("enabled");
+            elements.backButton.dataset.enabled = "false";
+        } else {
+            elements.backButton.classList.add("enabled");
+            elements.backButton.dataset.enabled = "true";
+        }
+        
+        if (properties.totalPages <= properties.actualPage) {
+            elements.nextButton.classList.remove("enabled");
+            elements.nextButton.dataset.enabled = "false";
+        } else {
+            elements.nextButton.classList.add("enabled");
+            elements.nextButton.dataset.enabled = "true";
+        }
     }
 
     return {
-        container: properties.container,
+        elements,
+        checkActualPage,
+        updatePage,
         clearPagination,
         createPagination,
+        styleActualPage
     }
 
 })();

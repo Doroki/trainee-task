@@ -1,3 +1,5 @@
+import 'promise-polyfill/src/polyfill';
+
 import TableModule from "./table";
 import PaginationModule from "./pagination";
 
@@ -20,6 +22,7 @@ const MainModule = (function () {
         Data.workers = data;
         sortData();
         TableModule.sortSign(null, Data.dataSortMethod); // Set default sorting at the begining, by ID and ascending
+        events();
     }
 
     const sortData = function( key="id", sortMethod="asc") {
@@ -38,6 +41,7 @@ const MainModule = (function () {
         });
         splitDataToPages(Data.workers);
         TableModule.addDataToTable(Data.dataPages[0]);
+        PaginationModule.updatePage({totalPages: Data.dataPages.length - 1});
     };
 
     const splitDataToPages = function(workersArr) { // Split saved data to pages for condition - there is more data objects than 5
@@ -77,12 +81,26 @@ const MainModule = (function () {
     }
 
     const events = function() {
-        PaginationModule.container.addEventListener("click", e => {
+        PaginationModule.elements.container.addEventListener("click", e => {
             if(!e.target.dataset.page) return;
             let pageNumber = e.target.dataset.page;
             pageNumber = parseInt(pageNumber) - 1;
-            // TableModule.updateProperties({actualPage: pageNumber})
+            PaginationModule.updatePage({actualPage: pageNumber});
             TableModule.addDataToTable(Data.dataPages[pageNumber]);
+        });
+
+        PaginationModule.elements.backButton.addEventListener("click", function(e) {
+            if(this.dataset.enabled === "false") return;
+            const previousPage = PaginationModule.checkActualPage() - 1;
+            TableModule.addDataToTable(Data.dataPages[previousPage]);
+            PaginationModule.updatePage({actualPage: previousPage});
+        });
+
+        PaginationModule.elements.nextButton.addEventListener("click", function(e){
+            if(this.dataset.enabled === "false") return;
+            const nextPage = PaginationModule.checkActualPage() + 1;
+            TableModule.addDataToTable(Data.dataPages[nextPage]);
+            PaginationModule.updatePage({actualPage: nextPage});
         });
     
         TableModule.header.addEventListener("click", e => {
@@ -92,6 +110,7 @@ const MainModule = (function () {
     
             sortData(sortBy, sortMethod);
             TableModule.addDataToTable(Data.dataPages[0]);
+            PaginationModule.updatePage({actualPage: 0});
             TableModule.sortSign(e.target, Data.dataSortMethod);
         });
     }
@@ -99,7 +118,6 @@ const MainModule = (function () {
     return {
         init: function() {
             getJSONData();
-            events();
         }
     };
 })();
