@@ -15,7 +15,7 @@ const gulp = require("gulp"),
 
 gulp.task('es6', function(done) {
     webpack({
-      entry: './src/js/index.js',
+      entry: ['whatwg-fetch', './src/js/index.js'],
       output: {
         path: __dirname + '/src/js/compiled',
         filename: 'bundle.js'
