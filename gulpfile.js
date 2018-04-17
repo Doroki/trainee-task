@@ -95,6 +95,8 @@ gulp.task("copy", function(){
     .pipe(gulp.dest("dist/"));
     gulp.src(["src/*.json"], {base: "src"})
     .pipe(gulp.dest("dist/"));
+    gulp.src(["src/icons/*.svg"], {base: "src"})
+    .pipe(gulp.dest("dist/"));
 });
 
 
