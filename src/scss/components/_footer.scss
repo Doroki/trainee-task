@@ -10,4 +10,10 @@
     @media (max-height: 630px) {
         margin-top: 27px;
     }
+
+    @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+        margin: 0;
+        position: relative;
+        bottom: -15%;
+    }
 }

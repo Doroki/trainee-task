@@ -2,7 +2,7 @@
     width: 800px;
     min-height: 330px;
     text-align: center;
-    border-radius: 5px;
+    // border-radius: 5px;
     overflow: hidden;
     margin: 30px auto 0 auto;
     box-shadow: 0px 6px 26px -6px rgba(0,0,0,0.75);
@@ -83,6 +83,14 @@
                 border-top-color: #000;
             }
         }
+
+        tr:first-child td:first-child { 
+            border-top-left-radius: 5px;
+        }
+
+        tr:first-child td:last-child {
+            border-top-right-radius: 5px;
+        }
     }
 
     /*----------  TABLE BODY  ----------*/
@@ -99,6 +107,13 @@
 
         & > tr > td:nth-child(odd){
             font-weight: bold;
+        }
+
+        tr:last-child td:first-child { 
+            border-bottom-left-radius: 5px; 
+        }
+        tr:last-child td:last-child { 
+            border-bottom-right-radius: 5px;
         }
     }
 }

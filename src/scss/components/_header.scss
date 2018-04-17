@@ -9,4 +9,8 @@
     @media (max-height: 630px) {
         margin-top: 30px;
     }
+
+    @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+        margin: 0;
+    }
 }
