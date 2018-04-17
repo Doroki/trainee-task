@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Trainee Task</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&amp;subset=latin-ext" rel="stylesheet">
+    <link rel="stylesheet" href="./css/main.css">
+</head>
+<body>
+    <header class="header">
+        <img src="./icons/icon - pracownicy.svg" alt="logo pracownicy">
+        <h1>Lista Pracowników</h1>
+    </header>
+    <main class="content">
+        <section class="content__container">
+            <table class="table">
+                <thead id="header" class="table__head">
+                    <tr class="table__row">
+                        <td data-sort="id" data-is-sorted="false">iD</td>
+                        <td data-sort="firstName" data-is-sorted="false">First Name</td>
+                        <td data-sort="lastName" data-is-sorted="false">Last Name</td>
+                        <td data-sort="dateOfBirth" data-is-sorted="false">Birth date</td>
+                        <td data-sort="company" data-is-sorted="false">Company</td>
+                        <td data-sort="note" data-is-sorted="false">Note</td>
+                    </tr>
+                </thead>
+                <tbody id="table-content" class="table__body">
+    
+                </tbody>
+            </table>
+        </section>
+    
+        <section id="pages" class="pagination">
+    
+        </section>
+    </main>
+    <footer class="footer" >
+        <img class="footer__img" src="./icons/chilid-logo.svg" alt="chilid logo">
+    </footer>
+    <script src="./js/compiled/bundle.js"></script>
+</body>
+</html>
